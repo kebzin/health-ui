@@ -27,10 +27,10 @@ export default function RootLayout({
             }
           >
             <AppSidebar variant="inset" />
-            <SidebarInset className=" overflow-hidden">
+            <SidebarInset className="overflow-hidden bg-slate-50 dark:bg-slate-900"> {/* Added bg-slate-50 */}
               <SiteHeader />
               <Separator />
-              <div className="p-5 overflow-hidden">{children}</div>
+              <div className="p-5 overflow-y-auto h-[calc(100vh-var(--header-height))]">{children}</div> {/* Added overflow-y-auto and height */}
             </SidebarInset>
           </SidebarProvider>
         </Providers>
