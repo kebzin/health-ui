@@ -13,9 +13,19 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, Loader2, AlertTriangle, ArrowLeft, UserCircle, CalendarDays, ShieldCheck, Phone, Hash } from "lucide-react";
+import {
+  Search,
+  Loader2,
+  AlertTriangle,
+  ArrowLeft,
+  UserCircle,
+  CalendarDays,
+  ShieldCheck,
+  Phone,
+  Hash,
+} from "lucide-react";
 import { useMemberStore } from "@/store/memberStore";
-import { Member } from "@/app/actions/memberActions";
+import { Member } from "@/lib/actions/memberActions";
 
 const QuickMemberSearch = () => {
   const {
@@ -57,9 +67,17 @@ const QuickMemberSearch = () => {
   // Helper to format date string
   const formatDate = (dateString?: string) => {
     if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+    return new Date(dateString).toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
   };
 
+  // Helper to get the latest member store state (for use in render logic)
+  function get() {
+    return useMemberStore.getState();
+  }
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={handleDialogVisibilityChange}>
@@ -93,7 +111,10 @@ const QuickMemberSearch = () => {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     autoFocus
                   />
-                  <Button type="submit" disabled={isLoading || !searchQuery.trim()}>
+                  <Button
+                    type="submit"
+                    disabled={isLoading || !searchQuery.trim()}
+                  >
                     {isLoading ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
@@ -106,7 +127,7 @@ const QuickMemberSearch = () => {
             </form>
 
             <div className="flex-grow overflow-y-auto pr-2 space-y-2 min-h-[150px]">
-              {isLoading && searchResults.length === 0 && (
+              {isLoading && searchResults?.length === 0 && (
                 <div className="flex items-center justify-center text-muted-foreground pt-4">
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   <span>Searching for members...</span>
@@ -118,29 +139,48 @@ const QuickMemberSearch = () => {
                   <span>Error: {error}</span>
                 </div>
               )}
-              {!isLoading && !error && searchResults.length === 0 && searchQuery && !get().isLoading && (
-                <p className="text-center text-muted-foreground pt-4">
-                  No members found for "{searchQuery}".
-                </p>
-              )}
-              {searchResults.map((member) => (
+              {!isLoading &&
+                !error &&
+                searchResults?.length === 0 &&
+                searchQuery &&
+                !get().isLoading && (
+                  <p className="text-center text-muted-foreground pt-4">
+                    No members found for "{searchQuery}".
+                  </p>
+                )}
+              {searchResults?.map((member) => (
                 <div
                   key={member.id}
                   className="p-3 border rounded-md hover:bg-accent cursor-pointer transition-colors"
                   onClick={() => handleSelectMember(member)}
                 >
-                  <h3 className="font-semibold text-sm text-primary">{member.fullName}</h3>
+                  <h3 className="font-semibold text-sm text-primary">
+                    {member.fullName}
+                  </h3>
                   <p className="text-xs text-muted-foreground">
-                    ID: {member.id} | Plan: {member.insurancePlanName} | Status: <span className={
-                      member.eligibilityStatus === "Active" ? "text-green-600" :
-                      member.eligibilityStatus === "Pending" ? "text-yellow-600" : "text-red-600"
-                    }>{member.eligibilityStatus}</span>
+                    ID: {member.id} | Plan: {member.insurancePlanName} | Status:{" "}
+                    <span
+                      className={
+                        member.eligibilityStatus === "Active"
+                          ? "text-green-600"
+                          : member.eligibilityStatus === "Pending"
+                          ? "text-yellow-600"
+                          : "text-red-600"
+                      }
+                    >
+                      {member.eligibilityStatus}
+                    </span>
                   </p>
                 </div>
               ))}
             </div>
             <DialogFooter className="flex justify-end gap-2 mt-auto pt-4">
-              <Button variant="ghost" onClick={() => handleDialogVisibilityChange(false)}>Cancel</Button>
+              <Button
+                variant="ghost"
+                onClick={() => handleDialogVisibilityChange(false)}
+              >
+                Cancel
+              </Button>
             </DialogFooter>
           </>
         ) : (
@@ -163,7 +203,9 @@ const QuickMemberSearch = () => {
               </DialogDescription>
             </DialogHeader>
             <div className="py-4 flex-grow overflow-y-auto pr-1 space-y-3 text-sm">
-              <h4 className="font-semibold text-base mb-2 border-b pb-1">Member Details</h4>
+              <h4 className="font-semibold text-base mb-2 border-b pb-1">
+                Member Details
+              </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
                 <div className="flex items-center">
                   <UserCircle className="h-4 w-4 mr-2 text-muted-foreground" />
@@ -175,50 +217,91 @@ const QuickMemberSearch = () => {
                 </div>
                 <div className="flex items-center">
                   <CalendarDays className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <strong>Date of Birth:</strong>&nbsp;{formatDate(selectedMember.dateOfBirth)}
+                  <strong>Date of Birth:</strong>&nbsp;
+                  {formatDate(selectedMember.dateOfBirth)}
                 </div>
-                 <div className="flex items-center">
+                <div className="flex items-center">
                   <ShieldCheck className="h-4 w-4 mr-2 text-muted-foreground" />
                   <strong>Status:</strong>&nbsp;
-                  <span className={
-                      selectedMember.eligibilityStatus === "Active" ? "text-green-600 font-semibold" :
-                      selectedMember.eligibilityStatus === "Pending" ? "text-yellow-600 font-semibold" :
-                      selectedMember.eligibilityStatus === "Expired" ? "text-orange-600 font-semibold" : "text-red-600 font-semibold"
-                    }>{selectedMember.eligibilityStatus}</span>
+                  <span
+                    className={
+                      selectedMember.eligibilityStatus === "Active"
+                        ? "text-green-600 font-semibold"
+                        : selectedMember.eligibilityStatus === "Pending"
+                        ? "text-yellow-600 font-semibold"
+                        : selectedMember.eligibilityStatus === "Expired"
+                        ? "text-orange-600 font-semibold"
+                        : "text-red-600 font-semibold"
+                    }
+                  >
+                    {selectedMember.eligibilityStatus}
+                  </span>
                 </div>
                 {selectedMember.nationalId && (
                   <div className="flex items-center">
                     <Hash className="h-4 w-4 mr-2 text-muted-foreground" />
-                    <strong>National ID:</strong>&nbsp;{selectedMember.nationalId}
+                    <strong>National ID:</strong>&nbsp;
+                    {selectedMember.nationalId}
                   </div>
                 )}
                 {selectedMember.contactNumber && (
                   <div className="flex items-center">
                     <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
-                    <strong>Contact:</strong>&nbsp;{selectedMember.contactNumber}
+                    <strong>Contact:</strong>&nbsp;
+                    {selectedMember.contactNumber}
                   </div>
                 )}
               </div>
 
-              <h4 className="font-semibold text-base mt-4 mb-2 border-b pb-1">Insurance Information</h4>
+              <h4 className="font-semibold text-base mt-4 mb-2 border-b pb-1">
+                Insurance Information
+              </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
-                <div><strong>Plan Name:</strong>&nbsp;{selectedMember.insurancePlanName}</div>
-                <div><strong>Policy Number:</strong>&nbsp;{selectedMember.policyNumber}</div>
-                {selectedMember.effectiveDate && <div><strong>Effective Date:</strong>&nbsp;{formatDate(selectedMember.effectiveDate)}</div>}
-                {selectedMember.terminationDate && <div><strong>Termination Date:</strong>&nbsp;{formatDate(selectedMember.terminationDate)}</div>}
-                {selectedMember.pcpName && <div><strong>PCP:</strong>&nbsp;{selectedMember.pcpName}</div>}
+                <div>
+                  <strong>Plan Name:</strong>&nbsp;
+                  {selectedMember.insurancePlanName}
+                </div>
+                <div>
+                  <strong>Policy Number:</strong>&nbsp;
+                  {selectedMember.policyNumber}
+                </div>
+                {selectedMember.effectiveDate && (
+                  <div>
+                    <strong>Effective Date:</strong>&nbsp;
+                    {formatDate(selectedMember.effectiveDate)}
+                  </div>
+                )}
+                {selectedMember.terminationDate && (
+                  <div>
+                    <strong>Termination Date:</strong>&nbsp;
+                    {formatDate(selectedMember.terminationDate)}
+                  </div>
+                )}
+                {selectedMember.pcpName && (
+                  <div>
+                    <strong>PCP:</strong>&nbsp;{selectedMember.pcpName}
+                  </div>
+                )}
               </div>
 
               {selectedMember.address && (
-                 <>
-                   <h4 className="font-semibold text-base mt-4 mb-2 border-b pb-1">Contact Information</h4>
-                    <div><strong>Address:</strong>&nbsp;{selectedMember.address}</div>
-                 </>
+                <>
+                  <h4 className="font-semibold text-base mt-4 mb-2 border-b pb-1">
+                    Contact Information
+                  </h4>
+                  <div>
+                    <strong>Address:</strong>&nbsp;{selectedMember.address}
+                  </div>
+                </>
               )}
-
             </div>
             <DialogFooter className="flex justify-end gap-2 mt-auto pt-4">
-               <Button variant="outline" onClick={() => handleDialogVisibilityChange(false)}>Close</Button>
+              <Button
+                variant="outline"
+                onClick={() => handleDialogVisibilityChange(false)}
+              >
+                Close
+              </Button>
             </DialogFooter>
           </>
         )}

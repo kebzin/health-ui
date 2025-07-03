@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { searchMembersAction, Member } from "@/app/actions/memberActions"; // Updated import
+import { searchMembersAction, Member } from "@/lib/actions/memberActions"; // Updated import
 
 // Define the store's state and actions
 interface MemberState {
@@ -14,14 +14,17 @@ interface MemberState {
   clearSearchResults: () => void;
 }
 
-export const useMemberStore = create<MemberState>((set, get) => ({ // Renamed from usePatentStore
+export const useMemberStore = create<MemberState>((set, get) => ({
+  // Renamed from usePatentStore
   searchQuery: "",
   searchResults: [],
   isLoading: false,
   selectedMember: null, // Renamed from selectedPatent
   error: null,
-  setSearchQuery: (query) => set({ searchQuery: query, error: null, selectedMember: null }), // Clear selected member and error on new query
-  fetchMembers: async () => { // Renamed from fetchPatents
+  setSearchQuery: (query) =>
+    set({ searchQuery: query, error: null, selectedMember: null }), // Clear selected member and error on new query
+  fetchMembers: async () => {
+    // Renamed from fetchPatents
     const query = get().searchQuery;
     if (!query.trim()) {
       set({ searchResults: [], isLoading: false, error: null });
@@ -32,11 +35,18 @@ export const useMemberStore = create<MemberState>((set, get) => ({ // Renamed fr
       const results = await searchMembersAction(query); // Updated to call searchMembersAction
       set({ searchResults: results, isLoading: false });
     } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : "An unknown error occurred";
+      const errorMessage =
+        e instanceof Error ? e.message : "An unknown error occurred";
       console.error("Error fetching members:", errorMessage); // Updated log message
       set({ isLoading: false, error: errorMessage, searchResults: [] });
     }
   },
   setSelectedMember: (member) => set({ selectedMember: member }), // Renamed from setSelectedPatent
-  clearSearchResults: () => set({ searchResults: [], searchQuery: "", selectedMember: null, error: null }),
+  clearSearchResults: () =>
+    set({
+      searchResults: [],
+      searchQuery: "",
+      selectedMember: null,
+      error: null,
+    }),
 }));
